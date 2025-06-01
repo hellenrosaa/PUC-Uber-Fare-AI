@@ -1,63 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot Preço Uber</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <title>Previsão de Corrida</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="chat-container">
-        <div class="chat-header">
-            <h1>Chatbot Preço Uber</h1>
-        </div>
-        <div class="chat-body">
-            <form id="precoForm">
-                <label for="origem">Endereço de Partida:</label>
-                <input type="text" id="origem" name="origem" required><br><br>
-                <label for="destino">Endereço de Destino:</label>
-                <input type="text" id="destino" name="destino" required><br><br>
-                <label for="categoria">Categoria:</label>
-                <select id="categoria" name="categoria" required>
-                    <option value="UberX">UberX</option>
-                    <option value="Comfort">Comfort</option>
-                    <option value="Black">Black</option>
-                </select><br><br>
-                <button type="submit">Prever Preço</button>
-            </form>
-            <div id="resultado"></div>
+    <div class="container">
+        <h1>Planeje sua próxima viagem</h1>
+        <form id="ride-form">
+            <label for="origem">Origem:</label>
+            <input type="text" id="origem" name="origem" required>
+
+            <label for="destino">Destino:</label>
+            <input type="text" id="destino" name="destino" required>
+
+            <label for="categoria">Categoria:</label>
+            <select id="categoria" name="categoria" required>
+                <option value="uberx">UberX</option>
+                <option value="comfort">Comfort</option>
+                <option value="black">Black</option>
+            </select>
+
+            <button type="submit">Calcular Preço</button>
+        </form>
+
+        <div id="resultado" class="hidden">
+            <h2>Estimativa da Corrida:</h2>
+            <p id="resposta"></p>
         </div>
     </div>
 
     <script>
-        document.getElementById('precoForm').addEventListener('submit', function(event) {
-            event.preventDefault();
+        document.getElementById('ride-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
             const origem = document.getElementById('origem').value;
             const destino = document.getElementById('destino').value;
             const categoria = document.getElementById('categoria').value;
 
-            fetch('/prever_preco', {
+            const response = await fetch('/prever_preco', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ origem, destino, categoria })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.error) {
-                    document.getElementById('resultado').innerText = data.error;
-                } else {
-                    document.getElementById('resultado').innerHTML = `
-                        <p>📍 Origem: ${data.origem}</p>
-                        <p>📍 Destino: ${data.destino}</p>
-                        <p>🚕 Categoria: ${data.categoria}</p>
-                        <p>🕒 Hora: ${data.hora}h</p>
-                        <p>📏 Distância: ${data.distancia_km.toFixed(2)} km</p>
-                        <p>💰 Preço estimado: R$ ${data.preco_estimado.toFixed(2)}</p>
-                    `;
-                }
             });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                document.getElementById('resposta').innerHTML = `
+                    🚩 <strong>Origem:</strong> ${data.origem}<br>
+                    🏁 <strong>Destino:</strong> ${data.destino}<br>
+                    🚘 <strong>Categoria:</strong> ${data.categoria}<br>
+                    🕒 <strong>Hora:</strong> ${data.hora}h<br>
+                    💰 <strong>Preço estimado:</strong> R$ ${data.preco_estimado.toFixed(2)}<br>
+                    📏 <strong>Distância:</strong> ${data.distancia_km.toFixed(2)} km`
+            } else {
+                document.getElementById('resposta').innerText = `Erro: ${data.error}`;
+            }
+
+            document.getElementById('resultado').classList.remove('hidden');
         });
     </script>
 </body>

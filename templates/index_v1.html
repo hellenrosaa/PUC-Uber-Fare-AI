@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot Preço Uber</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h1>Chatbot Preço Uber</h1>
+        </div>
+        <div class="chat-body">
+            <form id="precoForm">
+                <label for="origem">Endereço de Partida:</label>
+                <input type="text" id="origem" name="origem" required><br><br>
+                <label for="destino">Endereço de Destino:</label>
+                <input type="text" id="destino" name="destino" required><br><br>
+                <label for="categoria">Categoria:</label>
+                <select id="categoria" name="categoria" required>
+                    <option value="UberX">UberX</option>
+                    <option value="Comfort">Comfort</option>
+                    <option value="Black">Black</option>
+                </select><br><br>
+                <button type="submit">Prever Preço</button>
+            </form>
+            <div id="resultado"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('precoForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const origem = document.getElementById('origem').value;
+            const destino = document.getElementById('destino').value;
+            const categoria = document.getElementById('categoria').value;
+
+            fetch('/prever_preco', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ origem, destino, categoria })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('resultado').innerText = data.error;
+                } else {
+                    document.getElementById('resultado').innerHTML = `
+                        <p>📍 Origem: ${data.origem}</p>
+                        <p>📍 Destino: ${data.destino}</p>
+                        <p>🚕 Categoria: ${data.categoria}</p>
+                        <p>🕒 Hora: ${data.hora}h</p>
+                        <p>📏 Distância: ${data.distancia_km.toFixed(2)} km</p>
+                        <p>💰 Preço estimado: R$ ${data.preco_estimado.toFixed(2)}</p>
+                    `;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

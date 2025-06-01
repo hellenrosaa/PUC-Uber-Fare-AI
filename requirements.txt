@@ -1,1 +1,8 @@
 pandas==2.2.3
+Flask
+numpy
+joblib
+geopy
+haversine
+openai
+python-dotenv
