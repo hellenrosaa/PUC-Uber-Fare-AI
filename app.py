@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from notebooks.chatbot import gerar_resposta_llm, interpretar_mensagem, prever_preco
 from datetime import datetime
+import os
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
 
@@ -39,5 +40,6 @@ def responder():
     return jsonify({'resposta': 'Rota responder não implementada nesta versão.'})
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    #app.run(debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=True)
 
