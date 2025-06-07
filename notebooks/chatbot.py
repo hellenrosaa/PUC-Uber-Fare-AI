@@ -27,7 +27,7 @@ SCALER_PATHS = {
     'black': os.path.join(current_dir, 'model', 'scaler_black.joblib')
 }
 #DATA_PATH = os.path.join(current_dir, '..', 'data_final', 'data.csv')
-DATA_PATH = os.path.join(current_dir, '..', 'data_final', 'data_sample.csv')
+DATA_PATH = os.path.join(current_dir, '..', 'data_sample', 'data_sample.csv')
 
 try:
     df_uber = pd.read_csv(DATA_PATH)
