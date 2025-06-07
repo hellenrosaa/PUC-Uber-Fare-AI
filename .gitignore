@@ -2,6 +2,7 @@ Projeto_Khipo_Dados
 .venv
 data/
 data_final/
+!data_final/data_sample.csv
 notebooks/model/
 notebooks/__pycache__/
 .env
