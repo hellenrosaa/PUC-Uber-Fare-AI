@@ -9,12 +9,59 @@ from haversine import haversine
 import openai
 from dotenv import load_dotenv
 import time
+import requests
 from geopy.exc import GeocoderTimedOut
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Funções para baixar arquivos grandes do Google Drive
+def download_file_from_google_drive(id, destination):
+    URL = "https://docs.google.com/uc?export=download"
+    session = requests.Session()
+    response = session.get(URL, params={'id': id}, stream=True)
+    token = get_confirm_token(response)
+    if token:
+        params = {'id': id, 'confirm': token}
+        response = session.get(URL, params=params, stream=True)
+    save_response_content(response, destination)
+
+def get_confirm_token(response):
+    for key, value in response.cookies.items():
+        if key.startswith('download_warning'):
+            return value
+    return None
+
+def save_response_content(response, destination):
+    CHUNK_SIZE = 32768
+    with open(destination, "wb") as f:
+        for chunk in response.iter_content(CHUNK_SIZE):
+            if chunk:
+                f.write(chunk)
+
+# Dicionário dos nomes dos arquivos e seus respectivos IDs no Google Drive
+GDRIVE_IDS = {
+    'modelo_uberx.joblib': '1fqSyY3XRrQuZaGigaxMrxNm3pkiT67t4',
+    'modelo_comfort.joblib': '1K5ChX4ujdJtdQZ0yROoaoyvOOIej7rqy',
+    'modelo_black.joblib': '1yrTnfcpJKmQdnOZzATivokMNFNAhcxPy',
+    'scaler_uberx.joblib': '1BbQuExw5fmSDgNx2Fs49Kn8W4XYpv2w3',
+    'scaler_comfort.joblib': '1nbuF8_UPcdk1AHk_U-mmCU71TjujaRE3',
+    'scaler_black.joblib': '1XH56pHe4d3u2diEMcMRrvODIYkmJ4ith',
+}
+
+model_folder = os.path.join(current_dir, 'model')
+os.makedirs(model_folder, exist_ok=True)
+
+# Baixa os arquivos se não existirem localmente
+for filename, file_id in GDRIVE_IDS.items():
+    path = os.path.join(model_folder, filename)
+    if not os.path.exists(path):
+        print(f"Baixando {filename} do Google Drive...")
+        download_file_from_google_drive(file_id, path)
+    else:
+        print(f"{filename} já existe, pulando download.")
 
 MODEL_PATHS = {
     'uberx': os.path.join(current_dir, 'model', 'modelo_uberx.joblib'),

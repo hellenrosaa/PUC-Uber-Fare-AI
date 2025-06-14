@@ -6,3 +6,4 @@ geopy
 haversine
 openai
 python-dotenv
+requests
