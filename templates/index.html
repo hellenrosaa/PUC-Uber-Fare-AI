@@ -9,11 +9,32 @@
     <div class="container">
         <h1>Planeje sua próxima viagem</h1>
         <form id="ride-form">
-            <label for="origem">Origem:</label>
+            <!-- <label for="origem">Origem:</label>
             <input type="text" id="origem" name="origem" required>
 
             <label for="destino">Destino:</label>
-            <input type="text" id="destino" name="destino" required>
+            <input type="text" id="destino" name="destino" required> -->
+
+            <label for="origem">Origem:</label>
+            <select id="origem" name="origem" required>
+                <option value="Av. Paulista">Av. Paulista</option>
+                <option value="Pinheiros">Pinheiros</option>
+                <option value="Itaim Bibi">Itaim Bibi</option>
+                <option value="Centro">Centro</option>
+                <option value="Vila Madalena">Vila Madalena</option>
+                <option value="Rua Ministro Godói">Rua Ministro Godói</option>
+            </select>
+
+            <label for="destino">Destino:</label>
+            <select id="destino" name="destino" required>
+                <option value="Av. Paulista">Av. Paulista</option>
+                <option value="Pinheiros">Pinheiros</option>
+                <option value="Itaim Bibi">Itaim Bibi</option>
+                <option value="Centro">Centro</option>
+                <option value="Vila Madalena">Vila Madalena</option>
+                <option value="Rua Ministro Godói">Rua Ministro Godói</option>
+            </select>
+
 
             <label for="categoria">Categoria:</label>
             <select id="categoria" name="categoria" required>

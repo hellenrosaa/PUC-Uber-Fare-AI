@@ -1,16 +1,15 @@
-# chatbot.py (salvo em notebooks/)
+# chatbot.py (versão simplificada, offline)
+
 import os
 import joblib
 import numpy as np
 import pandas as pd
 from datetime import datetime
-from geopy.geocoders import Nominatim
 from haversine import haversine
 import openai
 from dotenv import load_dotenv
 import time
 import requests
-from geopy.exc import GeocoderTimedOut
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -54,7 +53,6 @@ GDRIVE_IDS = {
 model_folder = os.path.join(current_dir, 'model')
 os.makedirs(model_folder, exist_ok=True)
 
-# Baixa os arquivos se não existirem localmente
 for filename, file_id in GDRIVE_IDS.items():
     path = os.path.join(model_folder, filename)
     if not os.path.exists(path):
@@ -73,7 +71,6 @@ SCALER_PATHS = {
     'comfort': os.path.join(current_dir, 'model', 'scaler_comfort.joblib'),
     'black': os.path.join(current_dir, 'model', 'scaler_black.joblib')
 }
-#DATA_PATH = os.path.join(current_dir, '..', 'data_final', 'data.csv')
 DATA_PATH = os.path.join(current_dir, '..', 'data_sample', 'data_sample.csv')
 
 try:
@@ -92,6 +89,31 @@ conditions = [
 ]
 choices = [0, 1, 2]
 df_uber['traffic_indicator'] = np.select(conditions, choices, default=-1)
+
+# Dicionário de endereços com coordenadas fixas (simuladas ou reais)
+ENDERECOS_FIXOS = {
+    'Av. Paulista': (-23.561684, -46.655981),
+    'Pinheiros': (-23.567776, -46.693419),
+    'Itaim Bibi': (-23.586498, -46.675347),
+    'Centro': (-23.550520, -46.633308),
+    'Vila Madalena': (-23.561192, -46.699708),
+    'Rua Ministro Godói': (-23.537371, -46.674469)
+}
+
+def geocodificar_endereco(endereco):
+    if endereco in ENDERECOS_FIXOS:
+        return ENDERECOS_FIXOS[endereco]
+    else:
+        raise ValueError(f"Endereço não reconhecido: '{endereco}'. Use apenas endereços pré-definidos.")
+
+def calcular_distancia_km(origem, destino):
+    return haversine(origem, destino)
+
+def calcular_distance_pico(dist_km, hora):
+    return dist_km if 7 <= hora <= 9 or 17 <= hora <= 19 else 0
+
+def calcular_effective_distance(dist_km, traffic_indicator):
+    return dist_km * (1 + (traffic_indicator / 10))
 
 def gerar_resposta_llm(pergunta):
     try:
@@ -125,31 +147,6 @@ Retorne no formato JSON com as chaves: origem, destino, categoria. Exemplo:
     except:
         data = {"error": "Erro ao interpretar mensagem."}
     return data
-
-def geocodificar_endereco(endereco, tentativas=3):
-    geolocator = Nominatim(user_agent="chatbot_taxi", timeout=10)
-    for i in range(tentativas):
-        try:
-            location = geolocator.geocode(endereco)
-            if location:
-                return (location.latitude, location.longitude)
-            else:
-                raise ValueError(f"Endereço não encontrado: {endereco}")
-        except GeocoderTimedOut:
-            if i < tentativas - 1:
-                time.sleep(1)  # espera 1 segundo e tenta de novo
-                continue
-            else:
-                raise
-
-def calcular_distancia_km(origem, destino):
-    return haversine(origem, destino)
-
-def calcular_distance_pico(dist_km, hora):
-    return dist_km if 7 <= hora <= 9 or 17 <= hora <= 19 else 0
-
-def calcular_effective_distance(dist_km, traffic_indicator):
-    return dist_km * (1 + (traffic_indicator / 10))
 
 def prever_preco(origem, destino, categoria):
     latlong_origem = geocodificar_endereco(origem)
